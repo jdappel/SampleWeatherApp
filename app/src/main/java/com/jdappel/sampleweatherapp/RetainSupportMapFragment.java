@@ -5,7 +5,10 @@ import android.os.Bundle;
 import com.google.android.gms.maps.SupportMapFragment;
 
 /**
- * Created by jappel on 4/2/2016.
+ * Extended SupportMapFragment implementation for maintaining the map's state
+ * during runtime changes
+ * 
+ * @author jappel
  */
 public class RetainSupportMapFragment extends SupportMapFragment {
 

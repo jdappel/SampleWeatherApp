@@ -1,7 +1,38 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    class="com.jdappel.sampleweatherapp.RetainSupportMapFragment"
+<RelativeLayout
+    android:layout_height="fill_parent"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.jdappel.sampleweatherapp.WeatherActivity" />
+    android:id="@+id/top_layout_container"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        class="com.jdappel.sampleweatherapp.RetainSupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.jdappel.sampleweatherapp.WeatherActivity" />
+    <LinearLayout
+        android:id="@+id/header_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/threeDayForecastHeader"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dip"
+            android:textColor="#343434"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:text="3day Forecast"
+            android:background="@color/lightGray"/>
+
+        <ListView
+            android:id="@+id/threeDayForecastListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lightGray"
+            android:scrollbars="vertical">
+        </ListView>
+    </LinearLayout>
+</RelativeLayout>
