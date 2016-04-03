@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.RuntimeRemoteException;
 import com.jdappel.android.wunderground.api.APIResponseHandler;
 import com.jdappel.android.wunderground.api.impl.WUndergroundTemplate;
 import com.jdappel.android.wunderground.model.api.CurrentObservation;
@@ -120,6 +121,9 @@ public class WeatherActivity extends FragmentActivity implements
         UiSettings uiSettings = map.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
         uiSettings.setScrollGesturesEnabled(true);
+        uiSettings.setZoomGesturesEnabled(true);
+        uiSettings.setTiltGesturesEnabled(true);
+        uiSettings.setScrollGesturesEnabled(true);
     }
 
     @Override
@@ -183,7 +187,7 @@ public class WeatherActivity extends FragmentActivity implements
         } else {
             Location defaultLocation = new Location("");
             defaultLocation.setLatitude(39.9682);
-            defaultLocation.setLongitude(40.3423);
+            defaultLocation.setLongitude(-82.998);
             lastLocation = defaultLocation;
         }
         processAPIRequest(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()));
@@ -246,7 +250,12 @@ public class WeatherActivity extends FragmentActivity implements
         Observable.zip(ObservableUtils.createObservable(conditionsCallable), ObservableUtils.createObservable(forecastCallable), new Func2<APIResponseHandler<CurrentObservation>, APIResponseHandler<Forecast>, Pair<CurrentObservation, Forecast>>() {
             @Override
             public Pair<CurrentObservation,Forecast> call(APIResponseHandler<CurrentObservation> currentObservationAPIResponseHandler, APIResponseHandler<Forecast> forecastAPIResponseHandler) {
-                return new Pair(currentObservationAPIResponseHandler.getModelData(), forecastAPIResponseHandler.getModelData());
+                if (!currentObservationAPIResponseHandler.hasError() && !forecastAPIResponseHandler.hasError())
+                    return new Pair(currentObservationAPIResponseHandler.getModelData(), forecastAPIResponseHandler.getModelData());
+                else {
+                    Log.e(getClass().getName(), "Error zipping API responses");
+                }
+                throw new RuntimeException("Error returning data from API");
             }
         }).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<Pair<CurrentObservation, Forecast>>() {
@@ -258,7 +267,7 @@ public class WeatherActivity extends FragmentActivity implements
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        Log.e(getClass().getName(),throwable.getMessage());
+                        Log.e(getClass().getName(), throwable.getMessage());
                     }
                 });
     }
