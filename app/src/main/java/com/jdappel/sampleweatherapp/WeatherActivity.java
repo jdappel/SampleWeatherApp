@@ -17,6 +17,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -67,14 +69,16 @@ public class WeatherActivity extends FragmentActivity implements
     private GoogleMap map;
     private GoogleApiClient googleApiClient;
     private Location lastLocation;
-    private ArrayAdapter<String> listAdapter;
+    private ForecastListAdapter listAdapter;
     private Marker currentMarker;
     private final WUndergroundTemplate weatherAPI = new WUndergroundTemplate();
     private ActivityWeatherBinding binding;
     private final ForecastHeader header = new ForecastHeader();
 
     @Bind(R.id.threeDayForecastListView)
-    ListView multiDayForecastListView;
+    RecyclerView multiDayForecastListView;
+
+    private RecyclerView.LayoutManager listLayoutManager;
 
     @Override
     protected void onStart() {
@@ -92,7 +96,6 @@ public class WeatherActivity extends FragmentActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_weather);
-        binding.setForecastHeader(header);
         ButterKnife.bind(this);
 
         if (googleApiClient == null) {
@@ -105,7 +108,10 @@ public class WeatherActivity extends FragmentActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        listAdapter = new ArrayAdapter<String>(this, R.layout.forecast_item_layout, new ArrayList<String>());
+        listLayoutManager = new LinearLayoutManager(this);
+        multiDayForecastListView.setHasFixedSize(true);
+        multiDayForecastListView.setLayoutManager(listLayoutManager);
+        listAdapter = new ForecastListAdapter(new ArrayList<ForecastItem>(), getLayoutInflater());
         multiDayForecastListView.setAdapter(listAdapter);
     }
 
@@ -304,9 +310,7 @@ public class WeatherActivity extends FragmentActivity implements
      * @param forecast
      */
     private void updateListAdapter(Forecast forecast) {
-        listAdapter.notifyDataSetChanged();
-        listAdapter.clear();
-        listAdapter.addAll(populateForecastList(forecast));
+        listAdapter.updateList(populateForecastList(forecast));
     }
 
     /**
@@ -314,10 +318,10 @@ public class WeatherActivity extends FragmentActivity implements
      * @param currentForecast
      * @return {@code List<String>}
      */
-    private List<String> populateForecastList(com.jdappel.android.wunderground.model.api.Forecast currentForecast) {
-        List<String> items = new ArrayList<>(currentForecast.getTextForecast().getForecastList().size());
+    private List<ForecastItem> populateForecastList(com.jdappel.android.wunderground.model.api.Forecast currentForecast) {
+        List<ForecastItem> items = new ArrayList<>(currentForecast.getTextForecast().getForecastList().size());
         for (TextForecastDetail detail : currentForecast.getTextForecast().getForecastList()) {
-            items.add(detail.getTitle() + " - " + detail.getText());
+            items.add(new ForecastItem(detail.getTitle() + " - " + detail.getText()));
         }
         return items;
     }

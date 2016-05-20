@@ -1,11 +1,4 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <data>
-
-        <variable name="forecastHeader" type="com.jdappel.sampleweatherapp.ForecastHeader" />
-    </data>
-
-
 <RelativeLayout
     android:layout_height="fill_parent"
     android:layout_width="match_parent"
@@ -31,16 +24,15 @@
             android:textColor="#343434"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:text="@{forecastHeader.title}"
+            android:text="3 day Forecast"
             android:background="@color/lightGray"/>
 
-        <ListView
+        <android.support.v7.widget.RecyclerView
             android:id="@+id/threeDayForecastListView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/lightGray"
-            android:scrollbars="vertical">
-        </ListView>
+            android:layout_height="125sp"
+            android:background="@color/lightGray">
+        </android.support.v7.widget.RecyclerView>
     </LinearLayout>
 </RelativeLayout>
     </layout>

@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable
+            name="forecastItem"
+            type="com.jdappel.sampleweatherapp.ForecastItem"/>
+    </data>
 <TextView
     android:id="@+id/threeDayForecastListItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:textSize="8.5sp"
-    xmlns:android="http://schemas.android.com/apk/res/android" />
+    android:text="@{forecastItem.info}"/>
+    </layout>
