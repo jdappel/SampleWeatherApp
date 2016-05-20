@@ -1,17 +1,15 @@
 package com.jdappel.sampleweatherapp;
 
+import android.databinding.ObservableField;
+
 /**
  * Created by o654402 on 5/20/16.
  */
 public class ForecastHeader {
 
-    private String title;
+    private final ObservableField<String> title = new ObservableField<>();
 
-    public String getTitle() {
+    public ObservableField<String> getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 }

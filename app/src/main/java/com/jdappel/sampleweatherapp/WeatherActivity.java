@@ -92,7 +92,6 @@ public class WeatherActivity extends FragmentActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_weather);
-        header.setTitle("Test");
         binding.setForecastHeader(header);
         ButterKnife.bind(this);
 
@@ -297,8 +296,7 @@ public class WeatherActivity extends FragmentActivity implements
                 .bearing(0)
                 .build();
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        header.setTitle("3 day forecast for " + conditions.getLocation().getCity() + " " + conditions.getLocation().getState());
-        binding.setForecastHeader(header);
+        header.getTitle().set("3 day forecast for " + conditions.getLocation().getCity() + " " + conditions.getLocation().getState());
     }
 
     /**
