@@ -11,6 +11,7 @@ import rx.functions.Func2;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.databinding.DataBindingUtil;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,7 +20,6 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -38,12 +38,12 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.RuntimeRemoteException;
 import com.jdappel.android.wunderground.api.APIResponseHandler;
 import com.jdappel.android.wunderground.api.impl.WUndergroundTemplate;
 import com.jdappel.android.wunderground.model.api.CurrentObservation;
 import com.jdappel.android.wunderground.model.api.Forecast;
 import com.jdappel.android.wunderground.model.api.TextForecastDetail;
+import com.jdappel.sampleweatherapp.databinding.ActivityWeatherBinding;
 
 /**
  * Activity class that handles the user interactions for this sample weather application
@@ -70,6 +70,8 @@ public class WeatherActivity extends FragmentActivity implements
     private ArrayAdapter<String> listAdapter;
     private Marker currentMarker;
     private final WUndergroundTemplate weatherAPI = new WUndergroundTemplate();
+    private ActivityWeatherBinding binding;
+    private final ForecastHeader header = new ForecastHeader();
 
     @Bind(R.id.threeDayForecastListView)
     ListView multiDayForecastListView;
@@ -89,7 +91,9 @@ public class WeatherActivity extends FragmentActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_weather);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_weather);
+        header.setTitle("Test");
+        binding.setForecastHeader(header);
         ButterKnife.bind(this);
 
         if (googleApiClient == null) {
@@ -293,6 +297,8 @@ public class WeatherActivity extends FragmentActivity implements
                 .bearing(0)
                 .build();
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        header.setTitle("3 day forecast for " + conditions.getLocation().getCity() + " " + conditions.getLocation().getState());
+        binding.setForecastHeader(header);
     }
 
     /**

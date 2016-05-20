@@ -1,10 +1,17 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+
+        <variable name="forecastHeader" type="com.jdappel.sampleweatherapp.ForecastHeader" />
+    </data>
+
+
 <RelativeLayout
     android:layout_height="fill_parent"
     android:layout_width="match_parent"
-    android:id="@+id/top_layout_container"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:id="@+id/top_layout_container">
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    <fragment
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
         class="com.jdappel.sampleweatherapp.RetainSupportMapFragment"
@@ -24,7 +31,7 @@
             android:textColor="#343434"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:text="3day Forecast"
+            android:text="@{forecastHeader.title}"
             android:background="@color/lightGray"/>
 
         <ListView
@@ -36,3 +43,4 @@
         </ListView>
     </LinearLayout>
 </RelativeLayout>
+    </layout>
