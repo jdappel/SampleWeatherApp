@@ -1,14 +1,5 @@
 package com.jdappel.sampleweatherapp;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func2;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
@@ -20,11 +11,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -40,26 +26,36 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.jdappel.android.wunderground.api.APIResponseHandler;
 import com.jdappel.android.wunderground.api.impl.WUndergroundTemplate;
 import com.jdappel.android.wunderground.model.api.CurrentObservation;
 import com.jdappel.android.wunderground.model.api.Forecast;
 import com.jdappel.android.wunderground.model.api.TextForecastDetail;
 import com.jdappel.sampleweatherapp.databinding.ActivityWeatherBinding;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func2;
+import rx.schedulers.Schedulers;
+
 /**
- * Activity class that handles the user interactions for this sample weather application
- * and delegates API calls to the WUndergroundAPILib.
+ * Activity class that handles the user interactions for this sample weather application and delegates API calls to the
+ * WUndergroundAPILib.
  *
  * @author jappel
  */
 public class WeatherActivity extends FragmentActivity implements
-        OnMapReadyCallback,
-        ActivityCompat.OnRequestPermissionsResultCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener,
-        GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
+                                                      OnMapReadyCallback,
+                                                      ActivityCompat.OnRequestPermissionsResultCallback,
+                                                      GoogleApiClient.ConnectionCallbacks,
+                                                      GoogleApiClient.OnConnectionFailedListener,
+                                                      LocationListener,
+                                                      GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
 
     /**
      * Request code for location permission request.
@@ -149,8 +145,8 @@ public class WeatherActivity extends FragmentActivity implements
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
+                                              new String[]{ Manifest.permission.ACCESS_FINE_LOCATION },
+                                              LOCATION_PERMISSION_REQUEST_CODE);
         }
     }
 
@@ -181,13 +177,14 @@ public class WeatherActivity extends FragmentActivity implements
     }
 
     /**
-     * Method to handle identification of user's location upon application startup and return
-     * API Data germane to that location.  If the user's location isn't available, a default location
-     * is used.  Note location updates are removed if the initial location was found.
+     * Method to handle identification of user's location upon application startup and return API Data germane to that
+     * location.  If the user's location isn't available, a default location is used.  Note location updates are removed
+     * if the initial location was found.
      */
     private void startLocationUpdates() {
 
-        LocationRequest request = LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(1000);
+        LocationRequest request =
+                LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(1000);
         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, request, this);
         Location updatedLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (updatedLocation != null) {
@@ -204,9 +201,6 @@ public class WeatherActivity extends FragmentActivity implements
 
     /**
      * Simple value class to handle the merging of the two API calls during processing
-     *
-     * @param <CurrentObservation>
-     * @param <Forecast>
      */
     class Pair<CurrentObservation, Forecast> {
 
@@ -236,65 +230,57 @@ public class WeatherActivity extends FragmentActivity implements
 
     /**
      * Handles the processing of the two API calls and updates the view components accordingly.
-     *
-     * @param point
      */
     private void processAPIRequest(final LatLng point) {
-        Callable<APIResponseHandler<CurrentObservation>> conditionsCallable = new Callable<APIResponseHandler<CurrentObservation>>() {
-            @Override
-            public APIResponseHandler<CurrentObservation> call() throws Exception {
-                return weatherAPI.getConditionsAPI().getCurrentObservationByLatLong(
-                        point.latitude,
-                        point.longitude);
-            }
-        };
-        Callable<APIResponseHandler<Forecast>> forecastCallable = new Callable<APIResponseHandler<Forecast>>() {
-            @Override
-            public APIResponseHandler<Forecast> call() throws Exception {
-                return weatherAPI.getForecastAPI().getForecastByLatLong(
-                        point.latitude,
-                        point.longitude);
-            }
-        };
-        Observable.zip(ObservableUtils.createObservable(conditionsCallable), ObservableUtils.createObservable(forecastCallable), new Func2<APIResponseHandler<CurrentObservation>, APIResponseHandler<Forecast>, Pair<CurrentObservation, Forecast>>() {
-            @Override
-            public Pair<CurrentObservation,Forecast> call(APIResponseHandler<CurrentObservation> currentObservationAPIResponseHandler, APIResponseHandler<Forecast> forecastAPIResponseHandler) {
-                if (!currentObservationAPIResponseHandler.hasError() && !forecastAPIResponseHandler.hasError())
-                    return new Pair(currentObservationAPIResponseHandler.getModelData(), forecastAPIResponseHandler.getModelData());
-                else {
-                    Log.e(getClass().getName(), "Error zipping API responses");
-                }
-                throw new RuntimeException("Error returning data from API");
-            }
-        }).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Pair<CurrentObservation, Forecast>>() {
-                    @Override
-                    public void call(final Pair<CurrentObservation, Forecast> obs) {
-                        updateMapAndCamera(obs.getCurrentObservation(), point);
-                        updateListAdapter(obs.getForecast());
-                    }
-                }, new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        Log.e(getClass().getName(), throwable.getMessage());
-                    }
-                });
+        Observable<CurrentObservation> conditions = weatherAPI.getConditionsAPI().getCurrentObservationByLatLong(
+                point.latitude,
+                point.longitude);
+        GenericHystrixCommand<CurrentObservation> conditionsCommand =
+                new GenericHystrixCommand<>(conditions, "conditions");
+
+        Observable<Forecast> forecast = weatherAPI.getForecastAPI().getForecastByLatLong(
+                point.latitude,
+                point.longitude);
+        GenericHystrixCommand<Forecast> forecastCommand = new GenericHystrixCommand<>(forecast, "forecast");
+
+        Observable.zip(conditionsCommand.toObservable(), forecastCommand.toObservable(),
+                       new Func2<CurrentObservation, Forecast, Pair<CurrentObservation, Forecast>>() {
+                           @Override
+                           public Pair<CurrentObservation, Forecast> call(CurrentObservation currentObservation,
+                                                                          Forecast forecast) {
+                               return new Pair(currentObservation, forecast);
+
+                           }
+                       }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                  .subscribe(new Action1<Pair<CurrentObservation, Forecast>>() {
+                      @Override
+                      public void call(final Pair<CurrentObservation, Forecast> obs) {
+                          updateMapAndCamera(obs.getCurrentObservation(), point);
+                          updateListAdapter(obs.getForecast());
+                      }
+                  }, new Action1<Throwable>() {
+                      @Override
+                      public void call(Throwable throwable) {
+                          Log.e(getClass().getName(), throwable.getMessage());
+                      }
+                  });
     }
 
     /**
-     * Handles updating the map marker with the current location's weather data and
-     * center the camera
-     * @param conditions
-     * @param point
+     * Handles updating the map marker with the current location's weather data and center the camera
      */
     private void updateMapAndCamera(CurrentObservation conditions, LatLng point) {
         if (currentMarker != null) {
             currentMarker.remove();
         }
         currentMarker = map.addMarker(new MarkerOptions()
-                .position(point)
-                .title(conditions.getLocation().getCity() + " " + conditions.getLocation().getState() + " " + conditions.getLocation().getCountry())
-                .snippet(conditions.getCurrentWeather() + " " + conditions.getCurrentTemperature()));
+                                              .position(point)
+                                              .title(conditions.getLocation().getCity() + " " + conditions.getLocation()
+                                                                                                          .getState()
+                                                             + " " + conditions
+                                                      .getLocation().getCountry())
+                                              .snippet(conditions.getCurrentWeather() + " " + conditions
+                                                      .getCurrentTemperature()));
         currentMarker.showInfoWindow();
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(point)
@@ -302,12 +288,13 @@ public class WeatherActivity extends FragmentActivity implements
                 .bearing(0)
                 .build();
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        header.getTitle().set("3 day forecast for " + conditions.getLocation().getCity() + " " + conditions.getLocation().getState());
+        header.getTitle()
+              .set("3 day forecast for " + conditions.getLocation().getCity() + " " + conditions.getLocation()
+                                                                                                .getState());
     }
 
     /**
      * Updates the views list adapter when a new forecast is returned
-     * @param forecast
      */
     private void updateListAdapter(Forecast forecast) {
         listAdapter.updateList(populateForecastList(forecast));
@@ -315,10 +302,11 @@ public class WeatherActivity extends FragmentActivity implements
 
     /**
      * Populates the listview with the forecast details for the current location.
-     * @param currentForecast
+     *
      * @return {@code List<String>}
      */
-    private List<ForecastItem> populateForecastList(com.jdappel.android.wunderground.model.api.Forecast currentForecast) {
+    private List<ForecastItem> populateForecastList(
+            com.jdappel.android.wunderground.model.api.Forecast currentForecast) {
         List<ForecastItem> items = new ArrayList<>(currentForecast.getTextForecast().getForecastList().size());
         for (TextForecastDetail detail : currentForecast.getTextForecast().getForecastList()) {
             items.add(new ForecastItem(detail.getTitle() + " - " + detail.getText()));
