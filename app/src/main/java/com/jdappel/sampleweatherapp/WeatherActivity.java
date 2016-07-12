@@ -235,13 +235,12 @@ public class WeatherActivity extends FragmentActivity implements
         Observable<CurrentObservation> conditions = weatherAPI.getConditionsAPI().getCurrentObservationByLatLong(
                 point.latitude,
                 point.longitude);
-        GenericHystrixCommand<CurrentObservation> conditionsCommand =
-                new GenericHystrixCommand<>(conditions, "conditions");
+        ConditionsHystrixCommand conditionsCommand = new ConditionsHystrixCommand(conditions);
 
         Observable<Forecast> forecast = weatherAPI.getForecastAPI().getForecastByLatLong(
                 point.latitude,
                 point.longitude);
-        GenericHystrixCommand<Forecast> forecastCommand = new GenericHystrixCommand<>(forecast, "forecast");
+        ForecastHystrixCommand forecastCommand = new ForecastHystrixCommand(forecast);
 
         Observable.zip(conditionsCommand.toObservable(), forecastCommand.toObservable(),
                        new Func2<CurrentObservation, Forecast, Pair<CurrentObservation, Forecast>>() {
